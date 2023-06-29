@@ -2,35 +2,57 @@ import axios from "axios";
 import { CarProps, FilterProps } from "@/types";
 
 export async function fetchCars(filters: FilterProps) {
-  const headers = {
-    "X-RapidAPI-Key": "ae31950c68msh30bcc49c319eedap134f2cjsnf06d887cae41",
-    "X-RapidAPI-Host": "cars-by-api-ninjas.p.rapidapi.com",
-  };
-  // const params = {
-  //   model: "320i",
-  // };
   const { limit, manufacturer, fuel, model, year } = filters;
 
-  try {
-    const response = await axios.get(
-      `https://cars-by-api-ninjas.p.rapidapi.com/v1/cars?make=${manufacturer}&year=${year}&model=${model}&limit=${limit}&fuel_type=${fuel}`,
-      {
-        headers: headers,
-        // params: params,
-      }
-    );
+  // const options = {
+  //   method: "GET",
+  //   url: `https://cars-by-api-ninjas.p.rapidapi.com/v1/cars`,
+  //   params: {
+  //     model: model,
+  //     make: manufacturer,
+  //     year: year,
+  //     fuel_type: fuel,
+  //     limit: limit,
+  //   },
+  //   headers: {
+  //     "X-RapidAPI-Key": process.env.REACT_APP_API_KEY || "",
+  //     "X-RapidAPI-Host": "cars-by-api-ninjas.p.rapidapi.com",
+  //   },
+  // };
+  // const response = await axios.request(options);
+  // const result = response.data;
+  // console.log("cars fetched", result);
 
-    return response.data;
-  } catch (error) {
-    console.error(error);
-  }
-}
+
+
+  const headers: HeadersInit = {
+    "X-RapidAPI-Key": process.env.NEXT_APP_API_KEY || "",
+    "X-RapidAPI-Host": 'cars-by-api-ninjas.p.rapidapi.com' || "",
+  };
+
+    // Set the required headers for the API request
+  const response = await fetch(
+    `https://cars-by-api-ninjas.p.rapidapi.com/v1/cars?make=${manufacturer}&year=${year}&model=${model}&limit=${limit}&fuel_type=${fuel}`,
+    {
+      headers: headers,
+    }
+  );
+
+  // Parse the response as JSON
+  const result = await response.json();
+
+  return result;
+
+
+  
+};
+
 
 export const generateCarImageUrl = (car: CarProps, angle?: string) => {
   const url = new URL("https://cdn.imagin.studio/getimage");
   const { make, model, year } = car;
 
-  url.searchParams.append("customer", "ghemmanuelmensahcompany");
+  url.searchParams.append("customer", process.env.NEXT_PUBLIC_IMAGIN_KEY || "");
   url.searchParams.append("make", make);
   url.searchParams.append("modelFamily", model.split(" ")[0]);
   url.searchParams.append("zoomType", "fullscreen");
@@ -54,4 +76,29 @@ export const calculateCarRent = (city_mpg: number, year: number) => {
   const rentalRatePerDay = basePricePerDay + mileageRate + ageRate;
 
   return rentalRatePerDay.toFixed(0);
+};
+
+export const updateSearchParams = (type: string, value: string) => {
+  const searchParams = new URLSearchParams(window.location.search);
+
+  searchParams.set(type, value);
+
+  const newPathname = `${window.location.pathname}?${searchParams.toString()}`;
+
+  return newPathname;
+};
+
+export const deleteSearchParams = (type: string) => {
+  // Set the specified search parameter to the given value
+  const newSearchParams = new URLSearchParams(window.location.search);
+
+  // Delete the specified search parameter
+  newSearchParams.delete(type.toLocaleLowerCase());
+
+  // Construct the updated URL pathname with the deleted search parameter
+  const newPathname = `${
+    window.location.pathname
+  }?${newSearchParams.toString()}`;
+
+  return newPathname;
 };
